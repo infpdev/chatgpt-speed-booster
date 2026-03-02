@@ -6,8 +6,8 @@ export const DEFAULT_CONFIG: Readonly<ExtensionConfig> = Object.freeze({
     visibleMessageLimit: 3,
     loadMoreBatchSize: 3,
     enabled: true,
-    // Enable the floating status indicator by default.
     showStatus: true,
+    statusPosition: "top-right",
 });
 
 export const CONFIG_LIMITS = Object.freeze({

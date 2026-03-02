@@ -1,11 +1,15 @@
 export type TargetBrowser = "chrome" | "firefox" | "edge" | "safari";
 
+export type StatusPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+
 export interface ExtensionConfig {
     readonly visibleMessageLimit: number;
     readonly loadMoreBatchSize: number;
     readonly enabled: boolean;
     // Controls whether the floating in-page status indicator is rendered.
     readonly showStatus: boolean;
+    // Corner placement for the floating status badge.
+    readonly statusPosition: StatusPosition;
 }
 
 export interface TrackedMessage {
@@ -54,5 +58,6 @@ export interface ExtensionStatus {
     readonly totalMessages: number;
     readonly visibleMessages: number;
     readonly hiddenMessages: number;
-    readonly showStatus: boolean; //New toggle for status indicator
+    readonly showStatus: boolean;
+    readonly statusPosition: StatusPosition;
 }

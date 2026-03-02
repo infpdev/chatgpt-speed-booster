@@ -66,6 +66,7 @@ export class MessageManager {
             visibleMessages: visible,
             hiddenMessages: total - visible,
             showStatus: this.config.showStatus,
+            statusPosition: this.config.statusPosition,
         };
     }
 

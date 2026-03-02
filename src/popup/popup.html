@@ -47,12 +47,20 @@
             <div class="setting">
                 <div class="setting__info">
                     <span class="setting__label">Status indicator</span>
-                    <span class="setting__hint">Floating position label</span>
+                    <span class="setting__hint">Floating badge position</span>
                 </div>
-                <label class="toggle" aria-label="Enable or disable status indicator">
-                    <input type="checkbox" id="toggle-status" class="toggle__input">
-                    <span class="toggle__slider"></span>
-                </label>
+                <div class="status-row">
+                    <div class="position-picker" id="position-picker" aria-label="Badge position">
+                        <button class="position-picker__btn" data-pos="top-left" title="Top left"></button>
+                        <button class="position-picker__btn" data-pos="top-right" title="Top right"></button>
+                        <button class="position-picker__btn" data-pos="bottom-left" title="Bottom left"></button>
+                        <button class="position-picker__btn" data-pos="bottom-right" title="Bottom right"></button>
+                    </div>
+                    <label class="toggle" aria-label="Enable or disable status indicator">
+                        <input type="checkbox" id="toggle-status" class="toggle__input">
+                        <span class="toggle__slider"></span>
+                    </label>
+                </div>
             </div>
         </section>
     </div>

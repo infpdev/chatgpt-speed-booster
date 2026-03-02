@@ -1,5 +1,6 @@
 import { CSS_PREFIX } from "../shared/constants";
 import { logger } from "../shared/logger";
+import type { StatusPosition } from "../shared/types";
 
 export type LoadMoreHandler = () => void;
 
@@ -164,14 +165,19 @@ export class LoadMoreButton {
 export class StatusIndicator {
     private container: HTMLElement | null = null;
     private label: HTMLElement | null = null;
+    private position: StatusPosition = "top-right";
 
     constructor() { }
 
     /**
-     * Updates the displayed counts. Creates the indicator if needed.
+     * Updates the displayed counts and position. Creates the indicator if needed.
      */
-    update(hidden: number, total: number): void {
+    update(hidden: number, total: number, position: StatusPosition): void {
         if (!this.container) this.mount();
+        if (this.position !== position) {
+            this.position = position;
+            this.applyPosition();
+        }
         if (this.label) {
             this.label.textContent = `${hidden} hidden · ${total} total`;
         }
@@ -187,6 +193,23 @@ export class StatusIndicator {
         this.hide();
     }
 
+    private applyPosition(): void {
+        if (!this.container) return;
+        const s = this.container.style;
+        // Reset all corners
+        s.top = s.bottom = s.left = s.right = "";
+        switch (this.position) {
+            case "top-left":
+                s.top = "8px"; s.left = "16px"; break;
+            case "top-right":
+                s.top = "8px"; s.right = "16px"; break;
+            case "bottom-left":
+                s.bottom = "8px"; s.left = "16px"; break;
+            case "bottom-right":
+                s.bottom = "8px"; s.right = "16px"; break;
+        }
+    }
+
     private mount(): void {
         this.container = document.createElement("div");
         this.container.className = `${CSS_PREFIX}-status-indicator`;
@@ -195,8 +218,6 @@ export class StatusIndicator {
 
         Object.assign(this.container.style, {
             position: "fixed",
-            top: "8px",
-            right: "16px",
             zIndex: "10000",
             padding: "4px 10px",
             borderRadius: "6px",
@@ -212,6 +233,8 @@ export class StatusIndicator {
             userSelect: "none",
             opacity: "0.85",
         } satisfies Partial<CSSStyleDeclaration>);
+
+        this.applyPosition();
 
         this.label = document.createElement("span");
         this.label.className = `${CSS_PREFIX}-status-label`;

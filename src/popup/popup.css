@@ -13,10 +13,10 @@
     --text-primary: #e8e8f0;
     --text-secondary: #a8a8c0;
     --text-muted: #7878a0;
-    --accent: #6366f1;
-    --accent-hover: #5558e6;
+    --accent: #10a37f;
+    --accent-hover: #0d8a6a;
     --border: rgba(255, 255, 255, 0.08);
-    --border-focus: rgba(99, 102, 241, 0.5);
+    --border-focus: rgba(16, 163, 127, 0.5);
     --radius-sm: 8px;
     --radius-md: 12px;
     --transition: 0.15s ease;
@@ -31,10 +31,10 @@
         --text-primary: #1a1a2e;
         --text-secondary: #555570;
         --text-muted: #7878a0;
-        --accent: #6366f1;
-        --accent-hover: #5558e6;
+        --accent: #10a37f;
+        --accent-hover: #0d8a6a;
         --border: rgba(0, 0, 0, 0.08);
-        --border-focus: rgba(99, 102, 241, 0.4);
+        --border-focus: rgba(16, 163, 127, 0.4);
     }
 }
 
@@ -45,6 +45,8 @@ body {
     line-height: 1.5;
     color: var(--text-primary);
     background: var(--bg-primary);
+    border-radius: var(--radius-md);
+    overflow: hidden;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -192,4 +194,45 @@ body {
 .popup-settings[aria-disabled="true"] {
     opacity: 0.4;
     pointer-events: none;
+}
+
+/* Position picker grid */
+.position-picker {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 3px;
+    width: 40px;
+    height: 28px;
+    flex-shrink: 0;
+}
+
+.position-picker__btn {
+    all: unset;
+    cursor: pointer;
+    border-radius: 2px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    transition: background var(--transition), border-color var(--transition);
+}
+
+.position-picker__btn:hover {
+    background: var(--accent);
+    opacity: 0.5;
+}
+
+.position-picker__btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.position-picker__btn:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 1px;
+}
+
+.status-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }

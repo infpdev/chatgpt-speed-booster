@@ -1,6 +1,6 @@
 import { sendMessage } from "../shared/browser-api";
 import { CONFIG_LIMITS } from "../shared/constants";
-import { MessageType, type ExtensionConfig, type ExtensionStatus } from "../shared/types";
+import { MessageType, type ExtensionConfig, type ExtensionStatus, type StatusPosition } from "../shared/types";
 
 const toggleEnabled = document.getElementById("toggle-enabled") as HTMLInputElement;
 const toggleStatus = document.getElementById("toggle-status") as HTMLInputElement;
@@ -8,6 +8,8 @@ const visibleLimitInput = document.getElementById("visible-limit") as HTMLInputE
 const batchSizeInput = document.getElementById("batch-size") as HTMLInputElement;
 const statusText = document.getElementById("status-text") as HTMLElement;
 const settingsSection = document.querySelector(".popup-settings") as HTMLElement;
+const positionPicker = document.getElementById("position-picker") as HTMLElement;
+const positionButtons = positionPicker.querySelectorAll<HTMLButtonElement>(".position-picker__btn");
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -23,6 +25,11 @@ function renderConfig(config: ExtensionConfig): void {
     visibleLimitInput.value = String(config.visibleMessageLimit);
     batchSizeInput.value = String(config.loadMoreBatchSize);
     settingsSection.setAttribute("aria-disabled", String(!config.enabled));
+
+    // Highlight active position button
+    positionButtons.forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.pos === config.statusPosition);
+    });
 }
 
 async function refreshStatus(): Promise<void> {
@@ -86,5 +93,16 @@ toggleStatus.addEventListener("change", async () => {
 
 visibleLimitInput.addEventListener("input", scheduleAutoSave);
 batchSizeInput.addEventListener("input", scheduleAutoSave);
+
+positionPicker.addEventListener("click", async (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(".position-picker__btn");
+    if (!btn || !btn.dataset.pos) return;
+    const config = await sendMessage<ExtensionConfig>({
+        type: MessageType.SET_CONFIG,
+        payload: { statusPosition: btn.dataset.pos as StatusPosition },
+    });
+    renderConfig(config);
+    await refreshStatus();
+});
 
 init();
