@@ -116,13 +116,13 @@ Then rebuild. The build script auto-injects the URL patterns into all browser ma
 | Site | Status |
 | ---- | ------ |
 | [ChatGPT](https://chatgpt.com) | ✅ Tested |
-| [Claude](https://claude.ai) | 🔧 Selectors may need adjustment |
+| [Claude](https://claude.ai) | ✅ Tested |
 
 PRs to add or fix site configs are welcome.
 
 ## How it works
 
-- Shows the latest messages first (default: 10)
+- Shows the latest messages first (default: 3)
 - Hides older messages
 - Adds a Load more button at the top to reveal older messages in batches
 - Keeps the visible window capped as new messages arrive
@@ -131,10 +131,12 @@ PRs to add or fix site configs are welcome.
 
 Set these from the popup:
 
-| Setting          | Default | Range |
-| ---------------- | ------- | ----- |
-| Visible messages | 10      | 1-200 |
-| Load more batch  | 5       | 1-50  |
+| Setting            | Default   | Range   |
+| ------------------ | --------- | ------- |
+| Visible messages   | 3         | 1-200   |
+| Load more batch    | 3         | 1-50    |
+| Status indicator   | On        | On/Off  |
+| Badge position     | Top right | 4 corners |
 
 ## Testing
 
@@ -182,27 +184,6 @@ HEADLESS=1 npm test
 - Edge
 - Safari
 
-## Source code submission (Firefox)
-
-This project is built from TypeScript source files and bundled with esbuild.
-
-### Build environment
-
-- Operating systems: Linux, macOS, or Windows
-- Node.js: 18 or newer
-- npm: included with Node.js
-
-### Reproducible build steps (Firefox)
-
-```bash
-git clone https://github.com/Noah4ever/chatgpt-speed-booster.git
-cd chatgpt-speed-booster
-npm ci
-npm run build:firefox
-```
-
-The Firefox extension output is generated in `dist/firefox/`.
-
 ## Privacy
 
 - No message content is read or sent anywhere
@@ -231,9 +212,7 @@ npm run build:firefox
 The Firefox extension output is generated in `dist/firefox/`.
 The file to load or package is `dist/firefox/manifest.json`.
 
-Build script used by this project:
-
-- `scripts/build.mjs`
+Build script used by this project: `scripts/build.mjs`
 
 ## License
 
