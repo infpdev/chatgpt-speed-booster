@@ -4,9 +4,19 @@ Keeps long AI chat conversations responsive by showing only recent messages firs
 
 Works on **ChatGPT**, **Claude**, and any AI chat app you add to the config.
 
-| Browser | Link |
-| - | - |
-| Chrome | [Chrome Web Store](https://chromewebstore.google.com/detail/ai-chat-speed-booster/lalnlehliohjogjpelmggiligcmefmhn?hl=en)|
+## Install (quick)
+
+If you just want to install it:
+
+1. Go to [Releases](https://github.com/Noah4ever/ai-chat-speed-booster/releases)
+2. Download the zip for your browser
+3. Follow your browser guide:
+    - [Chrome install guide](docs/install/chrome.md)
+    - [Firefox install guide](docs/install/firefox.md)
+    - [Edge install guide](docs/install/edge.md)
+    - [Safari install guide](docs/install/safari.md)
+
+Store listings (Chrome/Firefox) may lag because review can take time.
 
 ## Build it yourself
 
@@ -37,48 +47,6 @@ You can also just build one target (`chrome`, `firefox`, `safari`, `edge`):
 npm run build:chrome
 ```
 Build ouput goes to `dist/chrome/`.
-
-### 4) Load it in your browser
-
-#### Chrome
-
-1. Open `chrome://extensions`
-3. Turn on Developer mode  (top right)
-4. Click Load unpacked (top left)
-5. Select `dist/chrome/`
-
-#### Edge
-
-1. Open `edge://extensions`
-2. Turn on Developer mode
-3. Click Load unpacked
-4. Select `dist/edge/`
-
-#### Firefox
-
-1. Open `about:debugging#/runtime/this-firefox`
-2. Click Load Temporary Add-on
-3. Select `dist/firefox/manifest.json`
-
-#### Safari
-
-1. Build and generate the Xcode project:
-
-```bash
-npm run safari:setup
-```
-
-2. If it doesn't open automatically, open the Xcode project:
-
-```bash
-open "safari-app/AI Chat Speed Booster/AI Chat Speed Booster.xcodeproj"
-```
-
-3. In Xcode, select the **macOS app target** (not iOS, not extension target), then click **Run (▶)**.
-
-4. In Safari, open **Safari → Settings → Extensions** and enable **AI Chat Speed Booster**.
-
-5. Open a supported AI chat site to verify it is active.
 
 ## Adding a new AI chat site
 
