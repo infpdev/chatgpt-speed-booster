@@ -6,7 +6,7 @@ Works on **ChatGPT**, **Claude**, and any AI chat app you add to the config.
 
 | Browser | Link |
 | - | - |
-| Chrome | [Chrome Web Store](https://chromewebstore.google.com/detail/chatgpt-speed-booster/lalnlehliohjogjpelmggiligcmefmhn?hl=en)|
+| Chrome | [Chrome Web Store](https://chromewebstore.google.com/detail/ai-chat-speed-booster/lalnlehliohjogjpelmggiligcmefmhn?hl=en)|
 
 ## Build it yourself
 
@@ -18,8 +18,8 @@ Works on **ChatGPT**, **Claude**, and any AI chat app you add to the config.
 ### 2) Install
 
 ```bash
-git clone https://github.com/Noah4ever/chatgpt-speed-booster.git
-cd chatgpt-speed-booster
+git clone https://github.com/Noah4ever/ai-chat-speed-booster.git
+cd ai-chat-speed-booster
 npm install
 ```
 
@@ -203,8 +203,8 @@ This project is built from TypeScript source files and bundled with esbuild.
 ### Reproducible build steps (Firefox)
 
 ```bash
-git clone https://github.com/Noah4ever/chatgpt-speed-booster.git
-cd chatgpt-speed-booster
+git clone https://github.com/Noah4ever/ai-chat-speed-booster.git
+cd ai-chat-speed-booster
 npm ci
 npm run build:firefox
 ```
