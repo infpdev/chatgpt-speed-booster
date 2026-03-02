@@ -13,6 +13,7 @@ export interface DOMObserverCallbacks {
 export class DOMObserver {
     private observer: MutationObserver | null = null;
     private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    private pendingMutations: MutationRecord[] = [];
     private readonly selectors: SiteSelectors;
     private readonly callbacks: DOMObserverCallbacks;
     private lastUrl = "";
@@ -48,6 +49,7 @@ export class DOMObserver {
             clearTimeout(this.debounceTimer);
             this.debounceTimer = null;
         }
+        this.pendingMutations = [];
         if (this.urlPollTimer) {
             clearInterval(this.urlPollTimer);
             this.urlPollTimer = null;
@@ -95,9 +97,12 @@ export class DOMObserver {
     };
 
     private readonly handleMutations = (mutations: MutationRecord[]): void => {
+        this.pendingMutations.push(...mutations);
         if (this.debounceTimer) clearTimeout(this.debounceTimer);
         this.debounceTimer = setTimeout(() => {
-            this.processMutations(mutations);
+            const batch = this.pendingMutations;
+            this.pendingMutations = [];
+            this.processMutations(batch);
         }, MUTATION_DEBOUNCE_MS);
     };
 
