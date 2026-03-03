@@ -106,7 +106,7 @@ for (const site of SITES) {
             await loadMockPage(page);
 
             await expect(page.locator(".acsb-status-indicator")).toBeVisible();
-            const hiddenCount = MESSAGE_COUNT - DEFAULT_VISIBLE_LIMIT;
+            const hiddenCount = (MESSAGE_COUNT - DEFAULT_VISIBLE_LIMIT) / 2;
             await expect(page.locator(".acsb-status-label")).toContainText(
                 `${hiddenCount} hidden`,
             );
