@@ -1,5 +1,6 @@
 import { CSS_PREFIX } from "../shared/constants";
 import { logger } from "../shared/logger";
+import type { SiteConfig } from "../shared/sites";
 import type { StatusPosition } from "../shared/types";
 
 export type LoadMoreHandler = () => void;
@@ -31,9 +32,11 @@ export class LoadMoreButton {
     private container: HTMLElement | null = null;
     private readonly onLoadMore: LoadMoreHandler;
     private hiddenCount = 0;
+    private siteConfig: SiteConfig;
 
-    constructor(onLoadMore: LoadMoreHandler) {
+    constructor(onLoadMore: LoadMoreHandler, siteConfig: SiteConfig) {
         this.onLoadMore = onLoadMore;
+        this.siteConfig = siteConfig;
     }
 
     show(
@@ -75,6 +78,7 @@ export class LoadMoreButton {
 
     private createElement(): HTMLElement {
         const wrapper = document.createElement("div");
+        const siteMargin = this.siteConfig.ui?.loadMoreMargin ?? "4px 0";
         wrapper.className = `${CSS_PREFIX}-load-more-wrapper`;
         wrapper.setAttribute("role", "banner");
         Object.assign(wrapper.style, {
@@ -82,7 +86,7 @@ export class LoadMoreButton {
             justifyContent: "center",
             alignItems: "center",
             padding: "12px 16px",
-            margin: "4px 15px 4px 0px", //ChatGPT's UI has a 15px gap on the left
+            margin: siteMargin,
             borderRadius: "8px",
             background: "#323232d9", //ChatGPT's --message-surface var
             backdropFilter: "blur(4px)",
@@ -166,8 +170,11 @@ export class StatusIndicator {
     private container: HTMLElement | null = null;
     private label: HTMLElement | null = null;
     private position: StatusPosition = "top-right";
+    private siteConfig: SiteConfig;
 
-    constructor() { }
+    constructor(siteConfig: SiteConfig) {
+        this.siteConfig = siteConfig;
+    }
 
     /**
      * Updates the displayed counts and position. Creates the indicator if needed.
@@ -179,7 +186,7 @@ export class StatusIndicator {
             this.applyPosition();
         }
         if (this.label) {
-            this.label.textContent = `${hidden} hidden · ${total} total`;
+            this.label.textContent = `${hidden / 2} hidden · ${total / 2} total`; // Divide by 2 everywhere
         }
     }
 
@@ -193,18 +200,57 @@ export class StatusIndicator {
         this.hide();
     }
 
+    private getAnchorRect(anchor: "name" | "controls" | "bottom"): DOMRect | undefined {
+        const selector = this.siteConfig.statusAnchors?.[anchor];
+        if (!selector) return undefined;
+        return document.querySelector<HTMLElement>(selector)?.getBoundingClientRect() ?? undefined;
+    }
+
     private applyPosition(): void {
         if (!this.container) return;
         const s = this.container.style;
         // Reset all corners
         s.top = s.bottom = s.left = s.right = "";
         switch (this.position) {
-            case "top-left":
-                s.top = "8px"; s.left = "16px"; break;
-            case "top-right":
-                s.top = "8px"; s.right = "16px"; break;
-            case "bottom-left":
-                s.bottom = "8px"; s.left = "16px"; break;
+
+            case "top-left": {
+                const rect = this.getAnchorRect("name");
+                if (rect) {
+                    s.top = `${Math.round(rect.bottom + 8)}px`;
+                    s.left = `${Math.round(Math.max(16, rect.left))}px`;
+                } else {
+                    s.top = "8px";
+                    s.left = "16px";
+                }
+                break;
+            }
+
+            case "top-right": {
+                const rect = this.getAnchorRect("controls");
+                if (rect) {
+                    s.top = `${Math.round(rect.bottom + 8)}px`;
+                    s.right = `${Math.round(
+                        Math.max(16, window.innerWidth - rect.right),
+                    )}px`;
+                } else {
+                    s.top = "8px";
+                    s.right = "16px";
+                }
+                break;
+            }
+
+            case "bottom-left": {
+                const rect = this.getAnchorRect("bottom");
+                if (rect) {
+                    s.bottom = "8px";
+                    s.left = `${Math.round(Math.max(16, rect.left + 16))}px`;
+                } else {
+                    s.bottom = "8px";
+                    s.left = "16px";
+                }
+                break;
+            }
+
             case "bottom-right":
                 s.bottom = "8px"; s.right = "16px"; break;
         }

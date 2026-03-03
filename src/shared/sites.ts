@@ -6,6 +6,16 @@ export interface SiteSelectors {
     readonly scrollContainerAlt?: string;
 }
 
+export interface StatusAnchors {
+    readonly name?: string;
+    readonly controls?: string;
+    readonly bottom?: string;
+}
+
+export interface SiteUI {
+    readonly loadMoreMargin?: string;
+}
+
 export interface SiteConfig {
     readonly id: string;
     readonly name: string;
@@ -13,6 +23,8 @@ export interface SiteConfig {
     readonly urlPatterns: readonly string[];
     readonly selectors: SiteSelectors;
     readonly messageIdAttribute?: string;
+    readonly statusAnchors?: StatusAnchors;
+    readonly ui?: SiteUI;
 }
 
 export const SITES: readonly SiteConfig[] = sitesConfig as SiteConfig[];
