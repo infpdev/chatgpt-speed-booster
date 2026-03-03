@@ -1,5 +1,6 @@
 import { CSS_PREFIX } from "../shared/constants";
 import { logger } from "../shared/logger";
+import type { SiteConfig } from "../shared/sites";
 import type { StatusPosition } from "../shared/types";
 
 export type LoadMoreHandler = () => void;
@@ -26,16 +27,16 @@ function createArrowUpIcon(): SVGElement {
     svg.append(vertical, arrowHead);
     return svg;
 }
-type SelectorGroup = "name" | "controls" | "bottom";
 
 export class LoadMoreButton {
     private container: HTMLElement | null = null;
     private readonly onLoadMore: LoadMoreHandler;
     private hiddenCount = 0;
-    private currentSite: string; // To tailor the UI specifically for the site in use
-    constructor(onLoadMore: LoadMoreHandler, currentSite: string) {
+    private siteConfig: SiteConfig;
+
+    constructor(onLoadMore: LoadMoreHandler, siteConfig: SiteConfig) {
         this.onLoadMore = onLoadMore;
-        this.currentSite = currentSite;
+        this.siteConfig = siteConfig;
     }
 
     show(
@@ -77,8 +78,7 @@ export class LoadMoreButton {
 
     private createElement(): HTMLElement {
         const wrapper = document.createElement("div");
-        const siteMargin =
-            this.currentSite == "chatgpt" ? "4px 15px 4px 0px" : "4px 0";
+        const siteMargin = this.siteConfig.ui?.loadMoreMargin ?? "4px 0";
         wrapper.className = `${CSS_PREFIX}-load-more-wrapper`;
         wrapper.setAttribute("role", "banner");
         Object.assign(wrapper.style, {
@@ -86,7 +86,7 @@ export class LoadMoreButton {
             justifyContent: "center",
             alignItems: "center",
             padding: "12px 16px",
-            margin: siteMargin, //ChatGPT's UI has a 15px gap on the left
+            margin: siteMargin,
             borderRadius: "8px",
             background: "#323232d9", //ChatGPT's --message-surface var
             backdropFilter: "blur(4px)",
@@ -170,25 +170,10 @@ export class StatusIndicator {
     private container: HTMLElement | null = null;
     private label: HTMLElement | null = null;
     private position: StatusPosition = "top-right";
-    private currentSite: string; // To tailor the UI specifically for the site in use
+    private siteConfig: SiteConfig;
 
-    private selectors: Record<SelectorGroup, Record<string, string>> = { // Selectors to precisely position the status indicator
-        name: {
-            chatgpt: '[data-testid="model-switcher-dropdown-button"]',
-            claude: '[data-testid="chat-title-button"]',
-        },
-        controls: {
-            chatgpt: '[data-testid="conversation-options-button"]',
-            claude: '[data-testid="wiggle-controls-actions"]',
-        },
-        bottom: {
-            chatgpt: "div[data-scroll-root]",
-            claude: 'div[id="main-content"]',
-        },
-    };
-
-    constructor(currentSite: string) {
-        this.currentSite = currentSite;
+    constructor(siteConfig: SiteConfig) {
+        this.siteConfig = siteConfig;
     }
 
     /**
@@ -215,28 +200,21 @@ export class StatusIndicator {
         this.hide();
     }
 
-    private getBoundingRect(group: SelectorGroup, platform: string) { // Helper fun to position precisely
-        if (group == "name")
-            return document
-                .querySelector<HTMLElement>(this.selectors[group][platform])
-                ?.querySelector<HTMLElement>("div")
-                ?.getBoundingClientRect();
-        return document
-            .querySelector<HTMLElement>(this.selectors[group][platform])
-            ?.getBoundingClientRect();
+    private getAnchorRect(anchor: "name" | "controls" | "bottom"): DOMRect | undefined {
+        const selector = this.siteConfig.statusAnchors?.[anchor];
+        if (!selector) return undefined;
+        return document.querySelector<HTMLElement>(selector)?.getBoundingClientRect() ?? undefined;
     }
 
     private applyPosition(): void {
         if (!this.container) return;
         const s = this.container.style;
-        const site = this.currentSite;
-        let rect = null;
         // Reset all corners
         s.top = s.bottom = s.left = s.right = "";
         switch (this.position) {
 
-            case "top-left":
-                rect = this.getBoundingRect("name", site); // UI-aware position
+            case "top-left": {
+                const rect = this.getAnchorRect("name");
                 if (rect) {
                     s.top = `${Math.round(rect.bottom + 8)}px`;
                     s.left = `${Math.round(Math.max(16, rect.left))}px`;
@@ -245,9 +223,10 @@ export class StatusIndicator {
                     s.left = "16px";
                 }
                 break;
+            }
 
-            case "top-right":
-                rect = this.getBoundingRect("controls", site); // UI-aware position
+            case "top-right": {
+                const rect = this.getAnchorRect("controls");
                 if (rect) {
                     s.top = `${Math.round(rect.bottom + 8)}px`;
                     s.right = `${Math.round(
@@ -258,9 +237,10 @@ export class StatusIndicator {
                     s.right = "16px";
                 }
                 break;
+            }
 
-            case "bottom-left":
-                rect = this.getBoundingRect("bottom", site); // UI-aware position
+            case "bottom-left": {
+                const rect = this.getAnchorRect("bottom");
                 if (rect) {
                     s.bottom = "8px";
                     s.left = `${Math.round(Math.max(16, rect.left + 16))}px`;
@@ -269,7 +249,8 @@ export class StatusIndicator {
                     s.left = "16px";
                 }
                 break;
-                
+            }
+
             case "bottom-right":
                 s.bottom = "8px"; s.right = "16px"; break;
         }

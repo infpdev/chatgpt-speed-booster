@@ -11,6 +11,14 @@
         "selectors": {
             "messageTurn": "article[data-message-id], article:has([data-message-id])",
             "scrollContainer": "main"
+        },
+        "statusAnchors": {
+            "name": "[data-testid=\"model-switcher-dropdown-button\"] > div",
+            "controls": "[data-testid=\"conversation-options-button\"]",
+            "bottom": "div[data-scroll-root]"
+        },
+        "ui": {
+            "loadMoreMargin": "4px 15px 4px 0px"
         }
     },
     {
@@ -25,6 +33,14 @@
         "selectors": {
             "messageTurn": "[data-test-render-count]",
             "scrollContainer": ".overflow-y-scroll"
+        },
+        "statusAnchors": {
+            "name": "[data-testid=\"chat-title-button\"]",
+            "controls": "[data-testid=\"wiggle-controls-actions\"]",
+            "bottom": "div[id=\"main-content\"]"
+        },
+        "ui": {
+            "loadMoreMargin": "4px 0"
         }
     }
 ]
