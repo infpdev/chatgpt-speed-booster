@@ -33,6 +33,8 @@ export class LoadMoreButton {
     private readonly onLoadMore: LoadMoreHandler;
     private hiddenCount = 0;
     private siteConfig: SiteConfig;
+    private fullLoadMode = false;
+    private onFullLoad: (() => void) | null = null;
 
     constructor(onLoadMore: LoadMoreHandler, siteConfig: SiteConfig) {
         this.onLoadMore = onLoadMore;
@@ -69,11 +71,47 @@ export class LoadMoreButton {
 
     hide(): void {
         this.container?.remove();
+        this.fullLoadMode = false;
     }
 
     destroy(): void {
         this.hide();
         this.container = null;
+        this.fullLoadMode = false;
+    }
+
+    /**
+     * Shows a "Load full conversation" button when the fetch interceptor
+     * trimmed messages and the user has exhausted all hidden DOM messages.
+     */
+    showFullLoad(
+        anchorParent: HTMLElement,
+        firstVisibleElement: HTMLElement | null,
+        onFullLoad: () => void,
+    ): void {
+        this.fullLoadMode = true;
+        this.onFullLoad = onFullLoad;
+
+        if (!this.container) {
+            this.container = this.createElement();
+        }
+
+        // Update label for full-load mode
+        const label = this.container.querySelector<HTMLElement>(
+            `.${CSS_PREFIX}-load-more-label`,
+        );
+        if (label) {
+            label.textContent = "Load full conversation";
+        }
+
+        if (
+            firstVisibleElement &&
+            firstVisibleElement.parentElement === anchorParent
+        ) {
+            anchorParent.insertBefore(this.container, firstVisibleElement);
+        } else {
+            anchorParent.prepend(this.container);
+        }
     }
 
     private createElement(): HTMLElement {
@@ -162,7 +200,11 @@ export class LoadMoreButton {
     private readonly handleClick = (e: MouseEvent): void => {
         e.preventDefault();
         e.stopPropagation();
-        this.onLoadMore();
+        if (this.fullLoadMode && this.onFullLoad) {
+            this.onFullLoad();
+        } else {
+            this.onLoadMore();
+        }
     };
 }
 

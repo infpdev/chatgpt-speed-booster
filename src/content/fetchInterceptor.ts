@@ -66,18 +66,19 @@ interface SiteEntry {
 
 const BRIDGE_KEY = "acsb_bridge_config";
 const PREFIX = "[ACSB Fetch]";
+/** Set by the interceptor when it trims a response, read by the content script. */
+const TRIMMED_KEY = "acsb_fetch_was_trimmed";
+/** One-shot: content script sets this before reload to skip trimming once. */
+const BYPASS_KEY = "acsb_skip_trim_once";
 
 /**
  * How many "Load More" clicks worth of extra messages to keep in the response.
- * The fetch interceptor keeps  visibleMessageLimit + (loadMoreBatchSize * BUFFER_ROUNDS)
- * messages so the content script still has hidden DOM elements to reveal.
- *
- * 5 rounds × default batch-size 3 × 2 (×2 turn convention) = 36 API msgs
- * = 18 turns kept.  This aggressively trims large chats so the framework
- * never creates DOM for the discarded turns — the primary speed gain.
- * Users who want the full history can disable Fast mode.
+ * 10 rounds × batch-size 3 × 2 (×2 turn convention) = 66 API msgs = 33 turns.
+ * Aggressively trims large chats while keeping ~33 turns for scrolling.
+ * When the user exhausts these, a "Load full conversation" button reloads
+ * with trimming bypassed.
  */
-const BUFFER_ROUNDS = 5;
+const BUFFER_ROUNDS = 10;
 
 // ---------------------------------------------------------------------------
 // Bootstrap
@@ -141,6 +142,14 @@ const BUFFER_ROUNDS = 5;
             return originalFetch.call(this, input, init);
         }
 
+        // One-shot bypass: content script requested a full reload
+        if (localStorage.getItem(BYPASS_KEY) === "true") {
+            localStorage.removeItem(BYPASS_KEY);
+            localStorage.removeItem(TRIMMED_KEY);
+            if (__DEV__) console.debug(PREFIX, "one-shot bypass active, skipping trim");
+            return originalFetch.call(this, input, init);
+        }
+
         // The fetch limit keeps extra messages beyond the visible limit
         // so the content script can reveal them with "Load More".
         // Multiply by 2 because the content script's MessageManager treats
@@ -174,8 +183,12 @@ const BUFFER_ROUNDS = 5;
 
             if (!trimmed) {
                 if (__DEV__) console.debug(PREFIX, "no trimming needed");
+                localStorage.removeItem(TRIMMED_KEY);
                 return response;
             }
+
+            // Signal to the content script that messages were removed
+            localStorage.setItem(TRIMMED_KEY, "true");
 
             if (__DEV__) console.debug(PREFIX, "response trimmed successfully");
             return buildResponse(response, JSON.stringify(trimmed));

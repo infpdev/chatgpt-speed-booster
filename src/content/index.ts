@@ -161,12 +161,28 @@ function handleExtensionMessage(message: unknown): ExtensionStatus | undefined {
 
 /**
  * Reveals older hidden turns and refreshes status positioning after layout settles.
+ * When all hidden DOM messages are exhausted but the fetch interceptor trimmed
+ * messages, shows a "Load full conversation" button that reloads without trimming.
  */
 function handleLoadMore(): void {
     const revealed = messageManager.loadMore();
     if (revealed > 0) {
         refreshUI();
+    } else {
+        // Nothing left to reveal from DOM — check if fetch interceptor trimmed
+        refreshUI();
     }
+}
+
+/**
+ * One-shot full reload: sets a localStorage flag so the fetch interceptor
+ * skips trimming on the next page load, then reloads.
+ */
+function handleFullLoad(): void {
+    try {
+        localStorage.setItem("acsb_skip_trim_once", "true");
+    } catch { /* storage unavailable */ }
+    window.location.reload();
 }
 
 /**
@@ -180,13 +196,28 @@ function refreshUI(): void {
         rafPending = false;
         const status = messageManager.getStatus();
 
+        // Check if the fetch interceptor trimmed messages from the API response
+        let fetchWasTrimmed = false;
+        try {
+            fetchWasTrimmed = localStorage.getItem("acsb_fetch_was_trimmed") === "true";
+        } catch { /* storage unavailable */ }
+
         if (status.hiddenMessages > 0 && config.enabled) {
+            // Normal Load More mode — there are still hidden DOM elements
             const firstVisible = findFirstVisibleMessage();
             const container = findMessageContainer();
             if (container && firstVisible) {
                 loadMoreButton.show(container, firstVisible, status.hiddenMessages);
             } else if (container) {
                 loadMoreButton.show(container, null, status.hiddenMessages);
+            }
+        } else if (fetchWasTrimmed && config.enabled && config.fetchInterceptEnabled) {
+            // All DOM messages visible, but fetch interceptor trimmed more.
+            // Show "Load full conversation" button.
+            const firstVisible = findFirstVisibleMessage();
+            const container = findMessageContainer();
+            if (container) {
+                loadMoreButton.showFullLoad(container, firstVisible, handleFullLoad);
             }
         } else {
             loadMoreButton.hide();
