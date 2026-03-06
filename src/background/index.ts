@@ -50,6 +50,13 @@ onMessage(async (message): Promise<unknown> => {
             return updated;
         }
 
+        case MessageType.TOGGLE_FETCH_INTERCEPT: {
+            const current = await loadConfig();
+            const updated = await saveConfig({ fetchInterceptEnabled: !current.fetchInterceptEnabled });
+            await broadcastToContentScripts({ type: MessageType.CONFIG_UPDATED, payload: updated });
+            return updated;
+        }
+
         default:
             return undefined;
     }

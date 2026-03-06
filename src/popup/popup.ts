@@ -1,9 +1,10 @@
 import { sendMessage } from "../shared/browser-api";
-import { CONFIG_LIMITS } from "../shared/constants";
+import { CONFIG_LIMITS, DEFAULT_CONFIG } from "../shared/constants";
 import { MessageType, type ExtensionConfig, type ExtensionStatus, type StatusPosition } from "../shared/types";
 
 const toggleEnabled = document.getElementById("toggle-enabled") as HTMLInputElement;
 const toggleStatus = document.getElementById("toggle-status") as HTMLInputElement;
+const toggleFetchIntercept = document.getElementById("toggle-fetch-intercept") as HTMLInputElement;
 const visibleLimitInput = document.getElementById("visible-limit") as HTMLInputElement;
 const batchSizeInput = document.getElementById("batch-size") as HTMLInputElement;
 const statusText = document.getElementById("status-text") as HTMLElement;
@@ -13,15 +14,25 @@ const positionButtons = positionPicker.querySelectorAll<HTMLButtonElement>(".pos
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
+/** Attempt to send a message to the background script; return null on failure. */
+async function safeSendMessage<T>(message: unknown): Promise<T | null> {
+    try {
+        return (await sendMessage<T>(message)) ?? null;
+    } catch {
+        return null;
+    }
+}
+
 async function init(): Promise<void> {
-    const config = await sendMessage<ExtensionConfig>({ type: MessageType.GET_CONFIG });
-    renderConfig(config);
+    const config = await safeSendMessage<ExtensionConfig>({ type: MessageType.GET_CONFIG });
+    renderConfig(config ?? DEFAULT_CONFIG);
     await refreshStatus();
 }
 
 function renderConfig(config: ExtensionConfig): void {
     toggleEnabled.checked = config.enabled;
     toggleStatus.checked = config.showStatus;
+    toggleFetchIntercept.checked = config.fetchInterceptEnabled;
     visibleLimitInput.value = String(config.visibleMessageLimit);
     batchSizeInput.value = String(config.loadMoreBatchSize);
     settingsSection.setAttribute("aria-disabled", String(!config.enabled));
@@ -34,12 +45,12 @@ function renderConfig(config: ExtensionConfig): void {
 
 async function refreshStatus(): Promise<void> {
     try {
-        const status = await sendMessage<ExtensionStatus | undefined>({ type: MessageType.GET_STATUS });
+        const status = await safeSendMessage<ExtensionStatus | undefined>({ type: MessageType.GET_STATUS });
         if (status && typeof status.totalMessages === "number") {
             statusText.textContent =
                 `${status.visibleMessages / 2}/${status.totalMessages / 2} messages visible` +
                 (status.hiddenMessages > 0 ? ` · ${status.hiddenMessages / 2} hidden` : "");
-                settingsSection.style.display = ""; // Show if the site is a valid site
+            settingsSection.style.display = ""; // Show if the site is a valid site
         } else {
             settingsSection.style.display = "none"; // Hide if the site is not a valid site
             statusText.textContent = "Open a supported AI chat to see status";
@@ -72,24 +83,30 @@ function scheduleAutoSave(): void {
             CONFIG_LIMITS.loadMoreBatchSize.min,
             CONFIG_LIMITS.loadMoreBatchSize.max,
         );
-        const config = await sendMessage<ExtensionConfig>({
+        const config = await safeSendMessage<ExtensionConfig>({
             type: MessageType.SET_CONFIG,
             payload: { visibleMessageLimit: visibleLimit, loadMoreBatchSize: batchSize },
         });
-        renderConfig(config);
+        if (config) renderConfig(config);
         await refreshStatus();
     }, 600);
 }
 
 toggleEnabled.addEventListener("change", async () => {
-    const config = await sendMessage<ExtensionConfig>({ type: MessageType.TOGGLE_ENABLED });
-    renderConfig(config);
+    const config = await safeSendMessage<ExtensionConfig>({ type: MessageType.TOGGLE_ENABLED });
+    if (config) renderConfig(config);
     await refreshStatus();
 });
 
 toggleStatus.addEventListener("change", async () => {
-    const config = await sendMessage<ExtensionConfig>({ type: MessageType.TOGGLE_STATUS });
-    renderConfig(config);
+    const config = await safeSendMessage<ExtensionConfig>({ type: MessageType.TOGGLE_STATUS });
+    if (config) renderConfig(config);
+    await refreshStatus();
+});
+
+toggleFetchIntercept.addEventListener("change", async () => {
+    const config = await safeSendMessage<ExtensionConfig>({ type: MessageType.TOGGLE_FETCH_INTERCEPT });
+    if (config) renderConfig(config);
     await refreshStatus();
 });
 
@@ -99,11 +116,11 @@ batchSizeInput.addEventListener("input", scheduleAutoSave);
 positionPicker.addEventListener("click", async (e) => {
     const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(".position-picker__btn");
     if (!btn || !btn.dataset.pos) return;
-    const config = await sendMessage<ExtensionConfig>({
+    const config = await safeSendMessage<ExtensionConfig>({
         type: MessageType.SET_CONFIG,
         payload: { statusPosition: btn.dataset.pos as StatusPosition },
     });
-    renderConfig(config);
+    if (config) renderConfig(config);
     await refreshStatus();
 });
 
