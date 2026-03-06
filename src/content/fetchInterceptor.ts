@@ -71,8 +71,13 @@ const PREFIX = "[ACSB Fetch]";
  * How many "Load More" clicks worth of extra messages to keep in the response.
  * The fetch interceptor keeps  visibleMessageLimit + (loadMoreBatchSize * BUFFER_ROUNDS)
  * messages so the content script still has hidden DOM elements to reveal.
+ *
+ * 100 rounds × default batch-size 3 = 300 turns (~600 API messages).
+ * This means conversations with up to ~300 turns are never trimmed at
+ * the fetch level, preserving full "Load More" support while still
+ * protecting against truly massive chats (1 000+ turns).
  */
-const BUFFER_ROUNDS = 10;
+const BUFFER_ROUNDS = 100;
 
 // ---------------------------------------------------------------------------
 // Bootstrap
