@@ -72,7 +72,7 @@ for (const site of SITES) {
             }
         });
 
-        test("Load More button appears with correct count", async ({ page }) => {
+        test("Load More button appears with correct counts", async ({ page }) => {
             await loadMockPage(page);
 
             const hiddenCount = MESSAGE_COUNT - DEFAULT_VISIBLE_LIMIT;
@@ -80,6 +80,9 @@ for (const site of SITES) {
             // Label divides by 2 to show conversation pairs, not raw turns
             await expect(page.locator(".acsb-load-more-label")).toContainText(
                 `${hiddenCount / 2} hidden`,
+            );
+            await expect(page.locator(".acsb-load-more-label")).toContainText(
+                `${DEFAULT_BATCH_SIZE / 2} more`
             );
         });
 
