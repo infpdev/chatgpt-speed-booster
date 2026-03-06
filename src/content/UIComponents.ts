@@ -155,7 +155,7 @@ export class LoadMoreButton {
             `.${CSS_PREFIX}-load-more-label`,
         );
         if (label) {
-            label.textContent = `Load more (${this.hiddenCount / 2} hidden)`;
+            label.textContent = `Load more (${Math.floor(this.hiddenCount / 2)} hidden)`;
         }
     }
 
@@ -186,7 +186,7 @@ export class StatusIndicator {
             this.applyPosition();
         }
         if (this.label) {
-            this.label.textContent = `${hidden / 2} hidden · ${total / 2} total`; // Divide by 2 everywhere
+            this.label.textContent = `${Math.floor(hidden / 2)} hidden · ${Math.floor(total / 2)} total`;
         }
     }
 
