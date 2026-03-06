@@ -47,8 +47,11 @@ function copyAssets(browser) {
     // Read manifest template and inject URL patterns from sites.config.json
     const manifest = JSON.parse(readFileSync(resolve(browserDir, "manifest.json"), "utf8"));
     manifest.host_permissions = allUrlPatterns;
-    if (manifest.content_scripts?.[0]) {
-        manifest.content_scripts[0].matches = allUrlPatterns;
+    // Inject URL patterns into ALL content_scripts entries
+    if (Array.isArray(manifest.content_scripts)) {
+        for (const cs of manifest.content_scripts) {
+            cs.matches = allUrlPatterns;
+        }
     }
     writeFileSync(resolve(outdir, "manifest.json"), JSON.stringify(manifest, null, 4) + "\n");
 
@@ -72,6 +75,8 @@ async function buildBrowser(browser) {
     copyAssets(browser);
 
     const entries = [
+        { name: "settingsBridge", path: "src/content/settingsBridge.ts" },
+        { name: "fetchInterceptor", path: "src/content/fetchInterceptor.ts" },
         { name: "content", path: "src/content/index.ts" },
         { name: "background", path: "src/background/index.ts" },
         { name: "popup", path: "src/popup/popup.ts" },

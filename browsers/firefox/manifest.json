@@ -18,6 +18,21 @@
         {
             "matches": [],
             "js": [
+                "settingsBridge.js"
+            ],
+            "run_at": "document_start"
+        },
+        {
+            "matches": [],
+            "js": [
+                "fetchInterceptor.js"
+            ],
+            "run_at": "document_start",
+            "world": "MAIN"
+        },
+        {
+            "matches": [],
+            "js": [
                 "content.js"
             ],
             "run_at": "document_idle"
