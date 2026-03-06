@@ -138,8 +138,12 @@ const BUFFER_ROUNDS = 10;
 
         // The fetch limit keeps extra messages beyond the visible limit
         // so the content script can reveal them with "Load More".
-        const fetchLimit = settings.visibleMessageLimit
-            + (settings.loadMoreBatchSize * BUFFER_ROUNDS);
+        // Multiply by 2 because the content script's MessageManager treats
+        // each conversation "turn" as 2 DOM elements (user + assistant),
+        // using visibleMessageLimit * 2 for its internal limit.  Keeping
+        // an even number of API messages prevents fractional display counts.
+        const fetchLimit = (settings.visibleMessageLimit
+            + (settings.loadMoreBatchSize * BUFFER_ROUNDS)) * 2;
 
         if (__DEV__) console.debug(PREFIX, "intercepting", method, url,
             `(fetchLimit=${fetchLimit})`);
