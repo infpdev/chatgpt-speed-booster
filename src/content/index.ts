@@ -85,6 +85,18 @@ function scheduleInitialScan(): void {
             messageManager.initialise(existing);
             refreshUI();
             logger.info(`initial scan: ${existing.length} messages`);
+            // After hiding old messages, scroll the container to the bottom so
+            // the user always sees the most recent turn.  Required for sites
+            // whose scroll container (e.g. Gemini's infinite-scroller) does not
+            // support CSS scroll anchoring and would otherwise stay at the top.
+            requestAnimationFrame(() => {
+                const scrollEl = domObserver.findScrollContainer();
+                if (scrollEl) {
+                    scrollEl.scrollTop = scrollEl.scrollHeight;
+                } else {
+                    window.scrollTo(0, document.body.scrollHeight);
+                }
+            });
             return;
         }
         setTimeout(attempt, 500);
@@ -178,12 +190,8 @@ function handleMessagesReset(): void {
     const messages = domObserver.queryAllMessages();
     messageManager.initialise(messages);
     refreshUI();
-    const scrollEl = domObserver.findScrollContainer();
-    if (scrollEl) {
-        scrollEl.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    // Do NOT scroll here — the user is actively reading a streaming response.
+    // Any forced scroll would jump away from the content they are watching.
 }
 
 function handleExtensionMessage(message: unknown): ExtensionStatus | undefined {
