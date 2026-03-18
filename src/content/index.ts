@@ -18,7 +18,6 @@ let loadMoreButton: LoadMoreButton;
 let statusIndicator: StatusIndicator;
 let domObserver: DOMObserver;
 let conversationRetryTimer: ReturnType<typeof setTimeout> | null = null;
-let previousMessageElements: Set<HTMLElement> = new Set();
 /**
  * Internal flag tracking whether the fetch interceptor trimmed the current
  * conversation's API response.  Set by consuming the DOM attribute
@@ -141,29 +140,27 @@ function handleConversationChanged(): void {
         conversationRetryTimer = null;
     }
 
-    // Remember current DOM elements so we can tell when genuinely new
-    // messages appear (old ones may linger until React unmounts them)
-    previousMessageElements = new Set(domObserver.queryAllMessages());
-
     // Don't restore DOM visibility — the old nodes are about to be removed
     // by the framework.  Un-hiding them would cause a flash of all messages.
     messageManager.destroy(false);
     loadMoreButton.hide();
     statusIndicator.hide();
 
-    // Wait for new messages to render, retry a few times for SPA navigations
+    // Wait for messages to appear in the DOM, then initialise.
+    // We don't compare element references because React may render the new
+    // conversation's messages *before* updating the URL (pushState), which
+    // would make a reference-based "new element" check always fail.
+    // Initialising with stale messages that haven't been unmounted yet is
+    // harmless: they sit at the start of the array and recalculateVisibility
+    // keeps the last N visible, so only the newest messages are shown.
+    // Once React removes the old elements, handleMessagesRemoved cleans them up.
     let retries = 0;
     const maxRetries = 20;
     const attempt = (): void => {
         const messages = domObserver.queryAllMessages();
-        const hasNewMessages = messages.some((m) => !previousMessageElements.has(m));
 
-        if (hasNewMessages || retries >= maxRetries) {
-            // If we found genuinely new messages, use all current messages.
-            // If we hit maxRetries with only old messages, initialise with
-            // whatever is there (could be the same chat reloaded).
+        if (messages.length > 0 || retries >= maxRetries) {
             messageManager.initialise(messages);
-            previousMessageElements = new Set();
             refreshUI();
             conversationRetryTimer = null;
             if (messages.length > 0) {
