@@ -96,10 +96,20 @@ export class MessageManager {
         };
     }
 
-    destroy(): void {
-        for (const msg of this.messages) {
-            this.showMessage(msg);
-            msg.element.removeAttribute(DATA_ATTR);
+    /**
+     * Tears down internal tracking state.
+     * @param restoreDOM - If true (default), un-hides all messages and removes
+     *   tracking attributes.  Pass false during SPA navigation where the old
+     *   DOM nodes are about to be removed by the framework anyway — this
+     *   avoids a visible flash of all messages before the new conversation
+     *   renders.
+     */
+    destroy(restoreDOM = true): void {
+        if (restoreDOM) {
+            for (const msg of this.messages) {
+                this.showMessage(msg);
+                msg.element.removeAttribute(DATA_ATTR);
+            }
         }
         this.messages = [];
         this.elementMap.clear();

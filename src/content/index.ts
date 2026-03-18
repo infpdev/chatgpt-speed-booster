@@ -145,7 +145,9 @@ function handleConversationChanged(): void {
     // messages appear (old ones may linger until React unmounts them)
     previousMessageElements = new Set(domObserver.queryAllMessages());
 
-    messageManager.destroy();
+    // Don't restore DOM visibility — the old nodes are about to be removed
+    // by the framework.  Un-hiding them would cause a flash of all messages.
+    messageManager.destroy(false);
     loadMoreButton.hide();
     statusIndicator.hide();
 

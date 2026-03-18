@@ -9,9 +9,10 @@
             "*://chatgpt.com/*"
         ],
         "selectors": {
-            "messageTurn": "article[data-message-id], article:has([data-message-id])",
+            "messageTurn": "section[data-testid^=\"conversation-turn-\"]",
             "scrollContainer": "main"
         },
+        "messageIdAttribute": "data-turn-id",
         "statusAnchors": {
             "name": "[data-testid=\"model-switcher-dropdown-button\"] > div",
             "controls": "[data-testid=\"conversation-options-button\"]",

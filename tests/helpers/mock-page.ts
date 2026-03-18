@@ -42,7 +42,7 @@ function parseMessageSelector(selector: string): ParsedAttr {
 export function getMessageTestAttr(site: SiteConfig): { attr: string; prefix: string } {
     switch (site.id) {
         case "chatgpt":
-            return { attr: "data-message-id", prefix: "msg-" };
+            return { attr: "data-turn-id", prefix: "msg-" };
         case "claude":
             return { attr: "data-test-render-count", prefix: "" };
         case "gemini":
@@ -86,14 +86,14 @@ function selectorToOpenTag(selector: string): string {
 function generateMessageHtml(site: SiteConfig, idx: number): string {
     switch (site.id) {
         case "chatgpt":
-            // <article data-message-id> — matches article:has([data-message-id])
-            // On real ChatGPT, data-message-id is on a nested div, but
-            // placing it on the article simplifies test assertions while
-            // still matching the :has() selector.
+            // <section data-testid="conversation-turn-N"> with data-turn-id for
+            // unique identification — matches section[data-testid^="conversation-turn-"]
             return [
-                `        <article data-message-id="msg-${idx}" data-message-author-role="${idx % 2 ? "user" : "assistant"}">`,
-                `            <p>Mock message ${idx} on ${site.name}</p>`,
-                `        </article>`,
+                `        <section data-testid="conversation-turn-${idx}" data-turn-id="msg-${idx}" data-turn="${idx % 2 ? "user" : "assistant"}">`,
+                `            <div data-message-author-role="${idx % 2 ? "user" : "assistant"}" data-message-id="msg-${idx}">`,
+                `                <p>Mock message ${idx} on ${site.name}</p>`,
+                `            </div>`,
+                `        </section>`,
             ].join("\n");
 
         case "claude":
